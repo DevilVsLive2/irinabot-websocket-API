@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "module": "Node16",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "outDir": "./out",
+    },
+    "exclude": ["./out"],
+    "include": ["./src"]
+}
