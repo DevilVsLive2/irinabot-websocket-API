@@ -15,7 +15,7 @@ export function getGameList(filters: GameListFilterFlags = {started: true}): Pro
     return new Promise((resolve, reject) => {
         const ws = new WebSocket("wss://irinabot.ru/ghost/");
         ws.binaryType = "arraybuffer";
-        ws.onopen = ( event: any ) => {
+        ws.onopen = ( event ) => {
             const requestData = new DataBuffer(new ArrayBuffer(6));
             requestData.putUint8(HeaderConstants.ClientRequest.CONTEXT_HEADER_CONSTANT);
             requestData.putUint8(HeaderConstants.ClientRequest.GET_GAMELIST);
@@ -25,7 +25,7 @@ export function getGameList(filters: GameListFilterFlags = {started: true}): Pro
             ws.send(requestData.toArrayBuffer());
         }
 
-        ws.onerror = ( error: any ) => {
+        ws.onerror = ( error ) => {
             reject(error);
             ws.close();
         }
@@ -34,8 +34,8 @@ export function getGameList(filters: GameListFilterFlags = {started: true}): Pro
             reject(closeEvent);
         }
 
-        ws.onmessage = ( msg: any ) => {
-            resolve(msg as any);
+        ws.onmessage = ( msg ) => {
+            resolve(msg.data as any);
         }
     });
 }

@@ -30,7 +30,7 @@ function getGameList(filters = { started: true }) {
             reject(closeEvent);
         };
         ws.onmessage = (msg) => {
-            resolve(msg);
+            resolve(msg.data);
         };
     });
 }
