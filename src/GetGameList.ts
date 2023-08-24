@@ -90,6 +90,34 @@ export function flagsIntegerToGameFlags ( flags:number ): GameFlags {
 
 const getMapInfoAPIURL = "https://api.irinabot.ru/v1/maps";
 
+export function getMapInfo(mapId: number) {
+    return new Promise<MapInfo>( async (resolve, reject) => {
+        const request = await fetch(`${getMapInfoAPIURL}/${mapId}`);
+        let answer:MapInfo = await request.json();
+        if (answer?.code == 40002) {
+            answer = {
+                mapId: mapId,
+                success: false,
+                fileName: null,
+                fileSize: null,
+                downloadUrl: null,
+                shortTag: null,
+                lastUpdateDate: null,
+                creationDate: null,
+                categories: null,
+                mapInfo: null,
+                additionalFlags: null,
+                configs: null,
+                verified: null,
+                semanticCheckError: null,
+                owner: null,
+                favorite: null,
+            }
+        }
+        resolve(answer);
+    });
+}
+
 export function getGameList(filters: GameListFilterFlags = {started: true, others: true, common: true}): Promise<IrinaGame[]> {
     return new Promise<IrinaGame[]>((resolve, reject) => {
         const ws = new WebSocket("wss://irinabot.ru/ghost/");
@@ -134,33 +162,6 @@ export function getGameList(filters: GameListFilterFlags = {started: true, other
                 const players:Array<Player> = new Array(playersCount);
                 for (let j = 0; j < playersCount; ++j)
                     players.push( { colour: data.getUint8(), name: data.getNullTerminatedString(), realm: data.getNullTerminatedString(), comment: data.getNullTerminatedString() } );
-                const getMapInfo = () => {
-                    return new Promise<MapInfo>( async (resolve, reject) => {
-                        const request = await fetch(`${getMapInfoAPIURL}/${mapId}`);
-                        let answer:MapInfo = await request.json();
-                        if (answer?.code == 40002) {
-                            answer = {
-                                mapId: mapId,
-                                success: false,
-                                fileName: null,
-                                fileSize: null,
-                                downloadUrl: null,
-                                shortTag: null,
-                                lastUpdateDate: null,
-                                creationDate: null,
-                                categories: null,
-                                mapInfo: null,
-                                additionalFlags: null,
-                                configs: null,
-                                verified: null,
-                                semanticCheckError: null,
-                                owner: null,
-                                favorite: null,
-                            }
-                        }
-                        resolve(answer);
-                    });
-                }
 
                 irinaGames.push( {
                     name: name,
@@ -176,7 +177,7 @@ export function getGameList(filters: GameListFilterFlags = {started: true, other
                     orderId: orderId,
                     playersCount: playersCount,
                     players: players,
-                    getMapInfo: getMapInfo,
+                    getMapInfo: ( () => { return getMapInfo(mapId) } ),
                 } );
             }
 

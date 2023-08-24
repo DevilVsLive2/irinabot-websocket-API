@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGameList = exports.flagsIntegerToGameFlags = void 0;
+exports.getGameList = exports.getMapInfo = exports.flagsIntegerToGameFlags = void 0;
 const DataBuffer_1 = require("./DataBuffer");
 const HeaderConstants_1 = require("./HeaderConstants");
 const ws_1 = __importDefault(require("ws"));
@@ -25,6 +25,34 @@ function flagsIntegerToGameFlags(flags) {
 }
 exports.flagsIntegerToGameFlags = flagsIntegerToGameFlags;
 const getMapInfoAPIURL = "https://api.irinabot.ru/v1/maps";
+function getMapInfo(mapId) {
+    return new Promise(async (resolve, reject) => {
+        const request = await fetch(`${getMapInfoAPIURL}/${mapId}`);
+        let answer = await request.json();
+        if (answer?.code == 40002) {
+            answer = {
+                mapId: mapId,
+                success: false,
+                fileName: null,
+                fileSize: null,
+                downloadUrl: null,
+                shortTag: null,
+                lastUpdateDate: null,
+                creationDate: null,
+                categories: null,
+                mapInfo: null,
+                additionalFlags: null,
+                configs: null,
+                verified: null,
+                semanticCheckError: null,
+                owner: null,
+                favorite: null,
+            };
+        }
+        resolve(answer);
+    });
+}
+exports.getMapInfo = getMapInfo;
 function getGameList(filters = { started: true, others: true, common: true }) {
     return new Promise((resolve, reject) => {
         const ws = new ws_1.default("wss://irinabot.ru/ghost/");
@@ -65,33 +93,6 @@ function getGameList(filters = { started: true, others: true, common: true }) {
                 const players = new Array(playersCount);
                 for (let j = 0; j < playersCount; ++j)
                     players.push({ colour: data.getUint8(), name: data.getNullTerminatedString(), realm: data.getNullTerminatedString(), comment: data.getNullTerminatedString() });
-                const getMapInfo = () => {
-                    return new Promise(async (resolve, reject) => {
-                        const request = await fetch(`${getMapInfoAPIURL}/${mapId}`);
-                        let answer = await request.json();
-                        if (answer?.code == 40002) {
-                            answer = {
-                                mapId: mapId,
-                                success: false,
-                                fileName: null,
-                                fileSize: null,
-                                downloadUrl: null,
-                                shortTag: null,
-                                lastUpdateDate: null,
-                                creationDate: null,
-                                categories: null,
-                                mapInfo: null,
-                                additionalFlags: null,
-                                configs: null,
-                                verified: null,
-                                semanticCheckError: null,
-                                owner: null,
-                                favorite: null,
-                            };
-                        }
-                        resolve(answer);
-                    });
-                };
                 irinaGames.push({
                     name: name,
                     gameFlags: flags,
@@ -106,7 +107,7 @@ function getGameList(filters = { started: true, others: true, common: true }) {
                     orderId: orderId,
                     playersCount: playersCount,
                     players: players,
-                    getMapInfo: getMapInfo,
+                    getMapInfo: (() => { return getMapInfo(mapId); }),
                 });
             }
             resolve(irinaGames);
