@@ -12,16 +12,6 @@ class DataBuffer {
         this.littleEndian = true;
         this.allowResize = true;
     }
-    reserveIfNeed(count) {
-        if (!this.allowResize)
-            return;
-        if (this.offset + count <= this.data.buffer.byteLength)
-            return;
-        const newBuffer = new ArrayBuffer(this.offset + count);
-        new Uint8Array(newBuffer).set(new Uint8Array(this.data.buffer));
-        this.data = new DataView(newBuffer);
-        return this;
-    }
     get length() {
         return this.data.byteLength;
     }
@@ -132,6 +122,16 @@ class DataBuffer {
         array.forEach((i) => {
             this.putUint8(i);
         }, this);
+        return this;
+    }
+    reserveIfNeed(count) {
+        if (!this.allowResize)
+            return;
+        if (this.offset + count <= this.data.buffer.byteLength)
+            return;
+        const newBuffer = new ArrayBuffer(this.offset + count);
+        new Uint8Array(newBuffer).set(new Uint8Array(this.data.buffer));
+        this.data = new DataView(newBuffer);
         return this;
     }
     static stringFromUTF8Array(data) {

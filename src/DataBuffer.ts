@@ -4,23 +4,11 @@ export class DataBuffer {
     private data: DataView;
     private allowResize: boolean;
 
-    constructor(arrayBuffer: ArrayBuffer) {
+    constructor(arrayBuffer: ArrayBufferLike) {
         this.data = new DataView(arrayBuffer);
         this.offset = 0;
         this.littleEndian = true;
         this.allowResize = true; 
-    }
-
-    private reserveIfNeed(count: number) : DataBuffer {
-        if (!this.allowResize) return;
-
-        if (this.offset + count <= this.data.buffer.byteLength) return;
-
-        const newBuffer = new ArrayBuffer(this.offset + count);
-        new Uint8Array(newBuffer).set(new Uint8Array(this.data.buffer));
-
-        this.data = new DataView(newBuffer);
-        return this;
     }
 
     public get length() : number {
@@ -47,6 +35,7 @@ export class DataBuffer {
 
     public putUint8(number: number) : DataBuffer {
         this.reserveIfNeed(1);
+
         this.data.setUint8(this.offset, number);
         this.offset++;
         return this;
@@ -164,6 +153,18 @@ export class DataBuffer {
             this.putUint8(i);
         }, this);
 
+        return this;
+    }
+
+    private reserveIfNeed(count: number) : DataBuffer {
+        if (!this.allowResize) return;
+
+        if (this.offset + count <= this.data.buffer.byteLength) return;
+
+        const newBuffer = new ArrayBuffer(this.offset + count);
+        new Uint8Array(newBuffer).set(new Uint8Array(this.data.buffer));
+
+        this.data = new DataView(newBuffer);
         return this;
     }
 
