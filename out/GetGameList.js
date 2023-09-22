@@ -49,6 +49,12 @@ function getMapInfo(mapId) {
                 favorite: null,
             };
         }
+        answer.lastUpdateDate = new Date(answer.lastUpdateDate);
+        answer.creationDate = new Date(answer.creationDate);
+        answer.configs.forEach(config => {
+            config.creationDate = new Date(config.creationDate);
+            config.lastUpdateDate = new Date(config.lastUpdateDate);
+        });
         resolve(answer);
     });
 }
